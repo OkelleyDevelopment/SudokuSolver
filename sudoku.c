@@ -27,6 +27,7 @@ void displayBoard(int board[SIZE][SIZE]){
             }
         }
     }
+    printf("\n");
 }
 
 int read_file(int board[SIZE][SIZE], char *path){
@@ -46,17 +47,46 @@ int read_file(int board[SIZE][SIZE], char *path){
     return 0;
 }
 
-int locate(int board[SIZE][SIZE], int *row, int *col){
+bool locate(int board[SIZE][SIZE], int *row, int *col){
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
             if(board[i][j] == 0){
-                row = i;
-                col = j;
-                return 0;
+                *row = i;
+                *col = j;
+                return true;
             }
         }
     }
-    return -1;
+    return false;
+}
+
+bool validate(int board[SIZE][SIZE], int num, int *row, int *col){
+    // Check the row
+    for(int i = 0; i < SIZE; i++){
+        if(board[*row][i] == num && *col != num){
+            return false;
+        }
+    }
+
+    // Check the column
+    for(int i = 0; i < SIZE; i++){
+        if(board[i][*col] == num && *row != num){
+            return false;
+        }
+    }
+
+    // Get the position in the matrix
+    int x = *row - (*row % 3);
+    int y = *col - (*col % 3);
+    int i, j;
+    for(i = x; i <= x + 2; i++){
+        for(j = y; j <= y + 2; j++){
+            if(board[i][j] == num){
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 int solve(int board[SIZE][SIZE]){
@@ -64,14 +94,34 @@ int solve(int board[SIZE][SIZE]){
     int col;
 
     // First we need to find the first available cell
-    int located = locate(board, &row, &col);
+    bool located = locate(board, &row, &col);
 
-    if(located == -1){
+    if(located == false){
         return true;
-    } else {
+    } 
 
+    // Now that we have the next open cell
+    // we need to fill in the digit 
+    for(int i = 1; i < 10; i++){
+        //printf("Iteration ===> %d\n", i);
+        if(validate(board, i, &row, &col) == true){
+            // if its valid we set the current cell
+            // to the current value
+            board[row][col] = i;
 
+            if (solve(board) == true){
+                return true;
+            }
+            
+            // This allows us to reset the board or
+            // "backtrack" if the current iteration 
+            // provided no result
+            board[row][col] = 0;
+        }
     }
+    // Return false for an unsovlable
+    // board
+    return false;
 }
 
 
@@ -107,6 +157,8 @@ int main(int argc,  char *argv[]){
 
     // Backtracking time 
     solve(board);
+
+    displayBoard(board);
     
     // write to file 
     return 0;
