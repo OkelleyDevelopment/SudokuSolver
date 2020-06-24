@@ -5,10 +5,6 @@
 #define LINE 11
 #define SIZE 9
 
-typedef struct {
-    int solved[SIZE][SIZE];
-} matrix;
-
 void displayBoard(int board[SIZE][SIZE]){
     printf("\n");
     for(int i = 0; i < SIZE; i++){
@@ -46,6 +42,31 @@ int read_file(int board[SIZE][SIZE], char *path){
     //displayBoard(board);
     return 0;
 }
+
+void write_to_file(int board[SIZE][SIZE], char *path){
+    FILE *file;
+    file = fopen(path, "w+");
+
+    for(int i = 0; i < SIZE; i++){
+        if(i % 3 == 0 && i != 0){
+            fprintf(file, "------------------------\n");
+        }
+        for(int j = 0; j < SIZE; j++){
+            if(j % 3 == 0 && j != 0){
+                fprintf(file, " | ");
+            }
+
+            if(j == 8){
+                fprintf(file, "%d\n", board[i][j]);
+            } else {
+                fprintf(file, "%d ", board[i][j]);
+            }
+        }
+    }
+    fprintf(file, "\n");
+}
+
+
 
 bool locate(int board[SIZE][SIZE], int *row, int *col){
     for(int i = 0; i < SIZE; i++){
@@ -134,13 +155,11 @@ int main(int argc,  char *argv[]){
 		printf("Usage: ./Struct_sort inputFile outputFile\n");
 		exit(1);
 	}
-
 	in_file = argv[1];
 	if(in_file == NULL){
 		fprintf(stderr, "ERROR: couldn't open %s for reading\n", argv[1]);
 		exit(1);
 	}
-
     out_file = argv[2];
 	if(out_file == NULL){
 		fprintf(stderr, "ERROR: couldn't open %s for writing\n", argv[2]);
@@ -150,16 +169,18 @@ int main(int argc,  char *argv[]){
     printf("\nWelcome to the C Sudoku Solver\n");
     
     int board[SIZE][SIZE];
-
+    
     read_file(board, in_file);
-
-    displayBoard(board);
-
-    // Backtracking time 
-    solve(board);
-
+    
     displayBoard(board);
     
-    // write to file 
-    return 0;
+    // Backtracking time 
+    if(solve(board)){
+        printf("Solution found!\n");
+        displayBoard(board);    
+        write_to_file(board, out_file);
+    } else {
+        printf("Solution not found!");
+    }
+       return 0;
 }
