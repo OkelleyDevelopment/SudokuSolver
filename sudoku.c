@@ -145,7 +145,7 @@ bool locate(int board[SIZE][SIZE], int *row, int *col){
  */
 bool is_valid(int board[SIZE][SIZE], int num, int *row, int *col){
 
-    int row_row_walk;
+    int row_walk;
     // Check the row and column
     for(row_walk = 0; row_walk < SIZE; row_walk++){
         if(board[*row][row_walk] == num || board[row_walk][*col] == num){
