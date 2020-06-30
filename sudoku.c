@@ -1,11 +1,27 @@
+/**
+ * A Sudoku Solver using the backtracking algorithm
+ *
+ * @author: Nicholas O'Kelley
+ *
+ * @date: June 23, 2020
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define LINE 11
+// Size of the row and column
 #define SIZE 9
 
-void displayBoard(int board[SIZE][SIZE]){
+/**
+ * Function that takes a 2D array and then displays
+ * the array in the Sudoku board format
+ *
+ * @param board - 2D array 
+ *
+ * @return none
+ */
+void display_board(int board[SIZE][SIZE]){
     printf("\n");
     for(int i = 0; i < SIZE; i++){
         if(i % 3 == 0 && i != 0){
@@ -26,6 +42,16 @@ void displayBoard(int board[SIZE][SIZE]){
     printf("\n");
 }
 
+/**
+ * Function that takes a 2D array and a pointer to a file path,
+ * and reads in a text file constructing the sudoku board.
+ *
+ * @param board - 2D array for the board
+ *
+ * @param path - a pointer to the file path
+ *
+ * @return int zero once it's done.
+ */
 int read_file(int board[SIZE][SIZE], char *path){
     FILE *file;
     file = fopen(path, "r");
@@ -43,6 +69,16 @@ int read_file(int board[SIZE][SIZE], char *path){
     return 0;
 }
 
+/**
+ * This function takes the 2D array and a file path
+ * and writes the solved board to the output file.
+ *
+ * @param board - the sudoku board
+ *
+ * @param path - the pointer to the output file path.
+ *
+ * @return none
+ */
 void write_to_file(int board[SIZE][SIZE], char *path){
     FILE *file;
     file = fopen(path, "w+");
@@ -66,8 +102,19 @@ void write_to_file(int board[SIZE][SIZE], char *path){
     fprintf(file, "\n");
 }
 
-
-
+/**
+ * This function finds the next available cell in the
+ * sudoku board and then assigns the row and column
+ * pointers to the spot in the 2D array. Returning true
+ * or false based on if a spot is located.
+ *
+ * @param board - the sudoku board.
+ *
+ * @param row - the row index
+ *
+ * @param col - the column index
+ *
+ */
 bool locate(int board[SIZE][SIZE], int *row, int *col){
     for(int i = 0; i < SIZE; i++){
         for(int j = 0; j < SIZE; j++){
@@ -81,28 +128,37 @@ bool locate(int board[SIZE][SIZE], int *row, int *col){
     return false;
 }
 
-bool validate(int board[SIZE][SIZE], int num, int *row, int *col){
-    // Check the row
-    for(int i = 0; i < SIZE; i++){
-        if(board[*row][i] == num && *col != num){
+
+/**
+ * This function checks the validity of the 
+ * current number being placed in the cell.
+ *
+ * @param board -  the sudoku board
+ *
+ * @param num - the number to be validated
+ *
+ * @param row - the row index value
+ *
+ * @param col - the column index value
+ *
+ * @returns boolean - true or false based on the check
+ */
+bool is_valid(int board[SIZE][SIZE], int num, int *row, int *col){
+
+    int row_row_walk;
+    // Check the row and column
+    for(row_walk = 0; row_walk < SIZE; row_walk++){
+        if(board[*row][row_walk] == num || board[row_walk][*col] == num){
             return false;
         }
     }
-
-    // Check the column
-    for(int i = 0; i < SIZE; i++){
-        if(board[i][*col] == num && *row != num){
-            return false;
-        }
-    }
-
-    // Get the position in the matrix
-    int x = *row - (*row % 3);
-    int y = *col - (*col % 3);
-    int i, j;
-    for(i = x; i <= x + 2; i++){
-        for(j = y; j <= y + 2; j++){
-            if(board[i][j] == num){
+    
+    // check each sub grid
+    int col_row_walk;
+    for(row_walk = (*row / 3)*3; row_walk < (*row/3)*3 + 3; row_walk++){
+        for(col_row_walk = (*col/3)*3; col_row_walk < (*col/3)*3 + 3; col_row_walk++){
+            if(!(row_walk == *row && col_row_walk == *col) && 
+                    board[row_walk][col_row_walk] == num){
                 return false;
             }
         }
@@ -110,6 +166,12 @@ bool validate(int board[SIZE][SIZE], int num, int *row, int *col){
     return true;
 }
 
+/**
+ * The function for to solve the sudoku board using the
+ * backtracking algorithm
+ *
+ * @param board - the board to solve
+ */
 int solve(int board[SIZE][SIZE]){
     int row;
     int col;
@@ -117,7 +179,7 @@ int solve(int board[SIZE][SIZE]){
     // First we need to find the first available cell
     bool located = locate(board, &row, &col);
 
-    if(located == false){
+    if(!located){
         return true;
     } 
 
@@ -125,7 +187,7 @@ int solve(int board[SIZE][SIZE]){
     // we need to fill in the digit 
     for(int i = 1; i < 10; i++){
         //printf("Iteration ===> %d\n", i);
-        if(validate(board, i, &row, &col) == true){
+        if(is_valid(board, i, &row, &col) == true){
             // if its valid we set the current cell
             // to the current value
             board[row][col] = i;
@@ -145,13 +207,21 @@ int solve(int board[SIZE][SIZE]){
     return false;
 }
 
-
-
+/**
+ * The main entry point into the program and begins 
+ * running the simulaiton to solve the user specified 
+ * sudoku board.
+ * 
+ * @param argc - the count of the arguments passed
+ *
+ * @param *argv - the array of arguments passed to the program
+ */
 int main(int argc,  char *argv[]){
     char *in_file = NULL;
     char *out_file = NULL;
-
-	if(argc != 3){
+    int board[SIZE][SIZE];
+	
+    if(argc != 3){
 		printf("Usage: ./Struct_sort inputFile outputFile\n");
 		exit(1);
 	}
@@ -167,20 +237,15 @@ int main(int argc,  char *argv[]){
 	}
 
     printf("\nWelcome to the C Sudoku Solver\n");
-    
-    int board[SIZE][SIZE];
-    
     read_file(board, in_file);
+    display_board(board);
     
-    displayBoard(board);
-    
-    // Backtracking time 
     if(solve(board)){
         printf("Solution found!\n");
-        displayBoard(board);    
+        display_board(board);    
         write_to_file(board, out_file);
     } else {
-        printf("Solution not found!");
+        printf("Solution not found! File not written.\n");
     }
-       return 0;
+    return 0;
 }
