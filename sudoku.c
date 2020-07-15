@@ -222,7 +222,7 @@ int main(int argc,  char *argv[]){
     int board[SIZE][SIZE];
 	
     if(argc != 3){
-		printf("Usage: ./Struct_sort inputFile outputFile\n");
+		printf("Usage: ./Sudoku inputFile outputFile\n");
 		exit(1);
 	}
 	in_file = argv[1];

@@ -1,5 +1,5 @@
 # Sudoku Solver
-
+![Program Function](./utils/main.png)
 ## Motivation
 To build a program that can attempt to solve any sudoku board specified 
 by the user using a backtracking algorithm and then write the output
